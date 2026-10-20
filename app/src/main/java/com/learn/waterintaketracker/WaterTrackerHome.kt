@@ -18,6 +18,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +49,7 @@ fun WaterTrackerHome(
 ) {
     var consumed by remember { mutableIntStateOf(0) }
     var lastAdded by remember { mutableIntStateOf(0) }
-    val dailyGoal = 2000
+    var dailyGoal by remember { mutableIntStateOf(2000) }
     val progress = consumed.toFloat() / dailyGoal
     val percentage = (progress * 100).toInt()
     val remaining = dailyGoal - consumed
@@ -89,6 +91,17 @@ fun WaterTrackerHome(
                     fontSize = 13.sp,
                     color = LightGray
                 )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            OutlinedButton(
+                onClick = {
+                    consumed = 0
+                    lastAdded = 0
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(text = "Reset")
             }
         }
 
@@ -197,14 +210,36 @@ fun WaterTrackerHome(
                     color = LightGray
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LinearProgressIndicator(
+                    progress = {
+                        (consumed.toFloat() / dailyGoal).coerceIn(0f, 1f)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp),
+                    color = Blue,
+                    trackColor = Color(0xFFE5F0FD)
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "$remaining ml remaining",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Blue
-                )
+                if (consumed >= dailyGoal) {
+                    Text(
+                        text = "🎉 Daily goal completed!",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF16865C)
+                    )
+                } else {
+                    Text(
+                        text = "$remaining ml remaining",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Blue
+                    )
+                }
             }
         }
 
@@ -256,6 +291,31 @@ fun WaterTrackerHome(
             shape = RoundedCornerShape(16.dp)
         ) {
             Text("Undo last addition")
+        }
+
+        Text(
+            text = "Daily Target",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = DarkBlue
+        )
+
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf(1500, 2000, 2500, 3000).forEach { target ->
+                FilterChip(
+                    selected = dailyGoal == target,
+                    onClick = {
+                        dailyGoal = target
+                    },
+                    label = {
+                        Text("${target / 100f}L")
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         Text(
